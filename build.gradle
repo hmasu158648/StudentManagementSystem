@@ -1,13 +1,15 @@
 plugins {
-	id 'java'
-	id 'war'
-	id 'org.springframework.boot' version '4.1.1'
-	id 'io.spring.dependency-management' version '1.1.7'
+	id 'java' // javaでつくるもの
+	id 'war' // Webアプリでつくるもの
+	id 'org.springframework.boot' version '4.1.1' // springbootのバージョン（ここでバージョンを記載しているからdependenciesでバージョンを書かなくてもいい）
+	id 'io.spring.dependency-management' version '1.1.7' //Springbootの依存関係のバージョン
 }
 
+//公開はしないがこのアプリがどんなものなのかを差し示す役割
 group = 'raisetech'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1-SNAPSHOT' //マイクロバージョンは軽微な変更、機能変更や修正はマイナーバージョン、メジャーバージョンは下位互換性が担保できないとき
 
+//コンパイルのバージョンを指定している
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
@@ -21,11 +23,16 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	// 便利機能、ユーティリティー
+	implementation("org.apache.commons:commons-lang3:3.21.0")
+
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat-runtime'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+
+//jUnit使うよねという、当たり前の雛形として親切心で最初から用意されているもの
 tasks.named('test') {
 	useJUnitPlatform()
 }

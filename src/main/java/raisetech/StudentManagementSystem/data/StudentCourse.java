@@ -1,4 +1,4 @@
-package raisetech.StudentManagementSystem;
+package raisetech.StudentManagementSystem.data;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDateTime;

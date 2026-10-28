@@ -1,4 +1,4 @@
-package raisetech.StudentManagementSystem;
+package raisetech.StudentManagementSystem.data;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
@@ -15,4 +15,6 @@ public class Student {
   private String area;
   private Integer age;
   private String sex;
+  private String remark;
+  private boolean isDeleted;
 }

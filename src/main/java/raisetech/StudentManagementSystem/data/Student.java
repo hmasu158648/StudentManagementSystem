@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @Data
-@JsonPropertyOrder({"id", "name", "kanaName", "nickname", "email", "area", "age", "sex"})
+@JsonPropertyOrder({"id", "name", "kanaName", "nickname", "email", "area", "age", "sex", "remark", "deleted"})
 public class Student {
 
   private Integer id;

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @JsonPropertyOrder({"id", "studentId", "courseName", "courseStartAt", "courseEndAt"})
-public class StudentCourse {
+public class StudentCourses {
 
   private Integer id;
   private Integer studentId;

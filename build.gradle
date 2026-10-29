@@ -35,7 +35,11 @@ repositories {
 
 
 dependencies {
+    // Springboot
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    // thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     // 便利機能、ユーティリティー
     implementation("org.apache.commons:commons-lang3:3.21.0")

@@ -3,7 +3,7 @@ package raisetech.StudentManagementSystem.domain;
 import java.util.List;
 import lombok.Data;
 import raisetech.StudentManagementSystem.data.Student;
-import raisetech.StudentManagementSystem.data.StudentCourses;
+import raisetech.StudentManagementSystem.data.StudentsCourses;
 
 /**
  * ドメインオブジェクト
@@ -12,5 +12,5 @@ import raisetech.StudentManagementSystem.data.StudentCourses;
 public class StudentDetail {
 
   private Student student;
-  private List<StudentCourses> studentCourses;
+  private List<StudentsCourses> studentsCourses;
 }

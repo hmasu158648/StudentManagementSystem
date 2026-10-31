@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>受講生登録</title>
+</head>
+<body>
+<h1>受講生登録</h1>
+<!--
+  ③ コントローラーの ② から渡された白紙の申込用紙（studentDetail）と、このフォームを結びつけます。
+
+  th:action="@{/registerStudent}"
+    送信ボタンを押したときの送り先です。
+    コントローラーの @PostMapping("/registerStudent") が付いたメソッドに届きます。
+
+  th:object="${studentDetail}"
+    コントローラーが Model に入れた StudentDetail（白紙の申込用紙）を結びつけます。
+    入力欄に書いた内容は、この用紙の中の student.name などに入って送信されます。
+
+  method="post"
+    データを「登録する」ときに使う送り方です（curl の -X POST と同じ意味です）。
+-->
+<form th:action="@{/registerStudent}" th:object="${studentDetail}" method="post">
+  <div>
+    <label for="name">名前：</label>
+    <!--
+      *{…} の * は「th:object で指定した studentDetail の中の」という意味です。
+      そのため ${studentDetail.student.name} と書く代わりに、*{student.name} と短く書けます。
+      th:field を使うと、送信用のラベル name="student.name" も自動で付きます。
+      このフォームで送られるのは名前だけで、ほかの項目は空（null）のまま届きます。
+    -->
+    <input type="text" id="name" th:field="*{student.name}" required>
+  </div>
+  <div>
+    <label for="kanaName">よみがな：</label>
+    <input type="text" id="kanaName" th:field="*{student.kanaName}" required>
+  </div>
+  <div>
+    <label for="nickName">ニックネーム：</label>
+    <input type="text" id="nickName" th:field="*{student.nickname}" required>
+  </div>
+  <div>
+    <label for="email">Eメール：</label>
+    <input type="email" id="email" th:field="*{student.email}" required>
+  </div>
+  <div>
+    <label for="area">お住まいの都道府県：</label>
+    <input type="text" id="area" th:field="*{student.area}" required>
+  </div>
+  <div>
+    <label for="age">年齢：</label>
+    <input type="number" id="age" th:field="*{student.age}">
+  </div>
+  <div>
+    <label>性別：</label>
+    <label><input type="radio" th:field="*{student.sex}" value="男性" required>男性</label>
+    <label><input type="radio" th:field="*{student.sex}" value="女性">女性</label>
+  </div>
+  <div>
+    <label for="remark">補足：</label>
+    <input type="text" id="remark" th:field="*{student.remark}">
+  </div>
+  <div th:each="course, stat : *{studentsCourses}">
+    <label th:for="|courseName${stat.index}|">希望するコース：</label>
+    <select th:id="|courseName${stat.index}|"
+            th:field="*{studentsCourses[__${stat.index}__].courseName}" title="希望するコース" required>
+      <option value="">選択してください</option>
+      <option value="Javaコース">Javaコース</option>
+      <option value="AWSフルコース">AWSフルコース</option>
+      <option value="AIエンジニア育成コース">AIエンジニア育成コース</option>
+      <option value="Web制作コース">Web制作コース</option>
+      <option value="Webマーケティングコース">Webマーケティングコース</option>
+      <option value="フロントエンドコース">フロントエンドコース</option>
+    </select>
+  </div>
+  <div>
+    <!-- ④ このボタンを押すと、記入済みの用紙が POST で送信されます（⑤ はコントローラー側へ） -->
+    <button type="submit">登録</button>
+  </div>
+</form>
+</body>
+</html>

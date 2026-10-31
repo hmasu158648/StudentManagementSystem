@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>受講生一覧</title>
@@ -34,7 +34,7 @@
     <td th:text="${studentDetail.student.remark}">特になし</td>
     <td>
       <ul>
-        <li th:each="course : ${studentDetail.studentCourses}">
+        <li th:each="course : ${studentDetail.studentsCourses}">
           <span th:text="${course.courseName}">Javaコース</span>
           （<span th:text="${#temporals.format(course.courseStartAt, 'yyyy/MM/dd')}">2026/01/01</span>
           ～

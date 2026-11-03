@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>受講生更新</title>
+</head>
+<body>
+<h1>受講生更新</h1>
+<!--
+  【更新用】送り先を /updateStudent に変更
+  th:object には、コントローラーが渡す「中身の入った申込用紙」を結びつけます。
+-->
+<form th:action="@{/updateStudent}" th:object="${studentDetail}" method="post">
+  <!--
+    【更新用】どの受講生を更新するかを伝えるため、id を見えない欄で送ります。
+    画面には表示されませんが、送信時にはきちんと送られます。
+  -->
+  <!--  th:field="*{student.id}と書くことで、idとnameがstudent.idに変換され、valueは生徒のid番号になる-->
+  <input type="hidden" th:field="*{student.id}">
+  <div>
+    <label for="name">名前：</label>
+    <input type="text" id="name" th:field="*{student.name}" required>
+  </div>
+  <div>
+    <label for="kanaName">よみがな：</label>
+    <input type="text" id="kanaName" th:field="*{student.kanaName}" required>
+  </div>
+  <div>
+    <label for="nickName">ニックネーム：</label>
+    <input type="text" id="nickName" th:field="*{student.nickname}" required>
+  </div>
+  <div>
+    <label for="email">Eメール：</label>
+    <input type="email" id="email" th:field="*{student.email}" required>
+  </div>
+  <div>
+    <label for="area">お住まいの都道府県：</label>
+    <!-- 登録済みの値と一致する都道府県が、自動で選ばれた状態になります -->
+    <select id="area" th:field="*{student.area}" required>
+      <option value="">選択してください</option>
+      <option value="北海道">北海道</option>
+      <option value="青森県">青森県</option>
+      <option value="岩手県">岩手県</option>
+      <option value="宮城県">宮城県</option>
+      <option value="秋田県">秋田県</option>
+      <option value="山形県">山形県</option>
+      <option value="福島県">福島県</option>
+      <option value="茨城県">茨城県</option>
+      <option value="栃木県">栃木県</option>
+      <option value="群馬県">群馬県</option>
+      <option value="埼玉県">埼玉県</option>
+      <option value="千葉県">千葉県</option>
+      <option value="東京都">東京都</option>
+      <option value="神奈川県">神奈川県</option>
+      <option value="新潟県">新潟県</option>
+      <option value="富山県">富山県</option>
+      <option value="石川県">石川県</option>
+      <option value="福井県">福井県</option>
+      <option value="山梨県">山梨県</option>
+      <option value="長野県">長野県</option>
+      <option value="岐阜県">岐阜県</option>
+      <option value="静岡県">静岡県</option>
+      <option value="愛知県">愛知県</option>
+      <option value="三重県">三重県</option>
+      <option value="滋賀県">滋賀県</option>
+      <option value="京都府">京都府</option>
+      <option value="大阪府">大阪府</option>
+      <option value="兵庫県">兵庫県</option>
+      <option value="奈良県">奈良県</option>
+      <option value="和歌山県">和歌山県</option>
+      <option value="鳥取県">鳥取県</option>
+      <option value="島根県">島根県</option>
+      <option value="岡山県">岡山県</option>
+      <option value="広島県">広島県</option>
+      <option value="山口県">山口県</option>
+      <option value="徳島県">徳島県</option>
+      <option value="香川県">香川県</option>
+      <option value="愛媛県">愛媛県</option>
+      <option value="高知県">高知県</option>
+      <option value="福岡県">福岡県</option>
+      <option value="佐賀県">佐賀県</option>
+      <option value="長崎県">長崎県</option>
+      <option value="熊本県">熊本県</option>
+      <option value="大分県">大分県</option>
+      <option value="宮崎県">宮崎県</option>
+      <option value="鹿児島県">鹿児島県</option>
+      <option value="沖縄県">沖縄県</option>
+    </select>
+  </div>
+  <div>
+    <label for="age">年齢：</label>
+    <input type="number" id="age" th:field="*{student.age}">
+  </div>
+  <div>
+    <label>性別：</label>
+    <!-- 用紙の値と一致する選択肢が、自動で選ばれた状態になります -->
+    <label><input type="radio" th:field="*{student.sex}" value="男性" required>男性</label>
+    <label><input type="radio" th:field="*{student.sex}" value="女性">女性</label>
+  </div>
+  <div>
+    <label for="remark">補足：</label>
+    <input type="text" id="remark" th:field="*{student.remark}">
+  </div>
+  <!-- コースの件数分だけ繰り返します（2件あれば2回表示されます） -->
+  <div th:each="course, stat : *{studentsCourses}">
+    <!-- 【更新用】どのコースを更新するかを伝えるため、コースの id も見えない欄で送ります -->
+    <input type="hidden" th:field="*{studentsCourses[__${stat.index}__].id}">
+    <label th:for="|courseName${stat.index}|">希望するコース：</label>
+    <select th:id="|courseName${stat.index}|"
+            th:field="*{studentsCourses[__${stat.index}__].courseName}" title="希望するコース" required>
+      <option value="">選択してください</option>
+      <option value="Javaコース">Javaコース</option>
+      <option value="AWSフルコース">AWSフルコース</option>
+      <option value="AIエンジニア育成コース">AIエンジニア育成コース</option>
+      <option value="Web制作コース">Web制作コース</option>
+      <option value="Webマーケティングコース">Webマーケティングコース</option>
+      <option value="フロントエンドコース">フロントエンドコース</option>
+    </select>
+  </div>
+  <div>
+    <label>
+      <input type="checkbox" th:field="*{student.isDeleted}">キャンセル
+    </label>
+  </div>
+  <div>
+    <!-- 【更新用】ボタンの文字を変更 -->
+    <button type="submit">更新</button>
+  </div>
+</form>
+</body>
+</html>

@@ -22,20 +22,20 @@
   </tr>
   </thead>
   <tbody>
-  <tr th:each="studentDetail : ${studentList}">
-    <td th:text="${studentDetail.student.id}">1</td>
-    <td th:text="${studentDetail.student.name}">山田太郎</td>
-    <td th:text="${studentDetail.student.kanaName}">ヤマダタロウ</td>
-    <td th:text="${studentDetail.student.nickname}">タロー</td>
-    <td th:text="${studentDetail.student.email}">taro@example.com</td>
-    <td th:text="${studentDetail.student.area}">東京</td>
-    <td th:text="${studentDetail.student.age}">20</td>
-    <td th:text="${studentDetail.student.sex}">男性</td>
-    <td th:text="${studentDetail.student.remark}">特になし</td>
+  <tr th:each="studentDetail : ${studentList}" th:object="${studentDetail}">
+    <td th:text="*{student.id}">1</td>
+    <td><a th:href="@{/student/{id}(id=*{student.id})}" th:text="*{student.name}">山田太郎</a></td>
+    <td th:text="*{student.kanaName}">ヤマダタロウ</td>
+    <td th:text="*{student.nickname}">タロー</td>
+    <td th:text="*{student.email}">taro@example.com</td>
+    <td th:text="*{student.area}">東京</td>
+    <td th:text="*{student.age}">20</td>
+    <td th:text="*{student.sex}">男性</td>
+    <td th:text="*{student.remark}">特になし</td>
     <td>
       <ul>
-        <li th:each="course : ${studentDetail.studentsCourses}">
-          <span th:text="${course.courseName}">Javaコース</span>
+        <li th:each="course : *{studentsCourses}" th:object="${course}">
+          <span th:text="*{courseName}">Javaコース</span>
           （<span th:text="${#temporals.format(course.courseStartAt, 'yyyy/MM/dd')}">2026/01/01</span>
           ～
           <span th:text="${#temporals.format(course.courseEndAt, 'yyyy/MM/dd')}">2026/06/30</span>）

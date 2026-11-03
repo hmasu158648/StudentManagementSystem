@@ -1,21 +1,25 @@
 plugins {
-    id 'java' // javaでつくるもの
-    id 'war' // Webアプリでつくるもの
-    id 'org.springframework.boot' version '4.1.1' // springbootのバージョン（ここでバージョンを記載しているからdependenciesでバージョンを書かなくてもいい）
-    id 'io.spring.dependency-management' version '1.1.7' // Springbootの依存関係のバージョン
+    id 'java' // Javaのプログラムをコンパイル（機械が読める形に変換）して動かすための基本の機能
+    id 'war' // Webアプリを「.war」という1つのファイルにまとめる機能（外部のTomcatなどに配置する形式）
+    id 'org.springframework.boot' version '4.1.1' // Spring Bootを使うための機能とそのバージョン（ここで決めたバージョンに合わせて、dependenciesの多くはバージョン番号を省略できる）
+    id 'io.spring.dependency-management' version '1.1.7' // ライブラリ同士のバージョンが食い違わないように、相性のよい組み合わせを自動で管理してくれる機能
 }
 
-// 公開はしないがこのアプリがどんなものなのかを差し示す役割
+// このアプリの「名前札」にあたる情報（group=持ち主の名前、version=アプリの版）。公開はしないが、どんなアプリかを示す役割
+// 「メジャー.マイナー.パッチ」の順。パッチ（最後）=軽微な修正、マイナー（真ん中）=機能の追加や変更、
+// メジャー（最初）=以前の版と互換性がなくなるような大きな変更。
+// SNAPSHOTは「開発中の版」という意味
 group = 'raisetech'
-version = '0.0.1-SNAPSHOT' // マイクロバージョンは軽微な変更、機能変更や修正はマイナーバージョン、メジャーバージョンは下位互換性が担保できないとき
+version = '0.0.1-SNAPSHOT'
 
-// コンパイルのバージョンを指定している
+// 使うJavaのバージョンを指定している（ここではJava 21。パソコンに別の版が入っていても、この版を使って動かす）
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
+// JavaDoc（ソースコードのコメントから作る説明書）を作るときの設定。日本語が文字化けしないよう、文字コードをUTF-8にそろえている
 javadoc {
     options.encoding = 'UTF-8'
     options.charSet = 'UTF-8'
@@ -23,44 +27,55 @@ javadoc {
 }
 
 
+// ライブラリの使い方をまとめる設定。Lombokのような「コンパイル時に動く道具（annotationProcessor）」を、コンパイル時にも使えるようにつなげている（Spring Initializrが最初から用意する定番の書き方）
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
 }
 
+// ライブラリをダウンロードしてくる場所（お店）の指定。mavenCentralは、Java用ライブラリの大きな公開置き場
 repositories {
     mavenCentral()
 }
 
 
+// このアプリが使う外部ライブラリ（部品）の一覧。
+// implementation=コンパイルも実行も使う / compileOnly=コンパイルのときだけ使う / runtimeOnly=実行のときだけ使う
+// annotationProcessor=コンパイル中にコードを自動で補ってくれる道具 / test〜=テストのときだけ使う
 dependencies {
-    // Springboot
+    // Spring Boot（Spring MVC）：Webアプリの土台。@Controllerなどでブラウザからのリクエストを受け付けられるようになる
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
-    // thymeleaf
+    // Thymeleaf：HTMLのひな形にデータを埋め込んで、画面（HTML）を作るための道具
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
-    // 便利機能、ユーティリティー
+    // Apache Commons Lang：文字列の判定など、よく使う便利な機能（ユーティリティー）を集めたライブラリ
     implementation("org.apache.commons:commons-lang3:3.21.0")
 
-    // Lombok
+    // Lombok：getter/setterやコンストラクターを、アノテーション（@Getterなど）だけで自動で作ってくれる。
+    // コンパイルのときにコードを補うだけなので、compileOnlyとannotationProcessorの2行をセットで書く
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // MySQLのドライバ
+    // MySQLのドライバ：JavaからMySQL（データベース）につなぐための部品。実行するときだけ必要なのでruntimeOnly
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // MyBatis
+    // MyBatis：SQLを書いてデータベースを操作し、結果をJavaのオブジェクトに入れてくれるライブラリ（@Select、@Insertなどが使える）。
+    // Spring Bootと一緒に使うための版で、バージョンはここで指定している
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.1.0'
 
+    // Tomcat（Webアプリを動かすサーバー）。warを外部のTomcatに置く場合は、サーバー側にあるものを使うので、
+    // 実行時には使うが.warファイルの中には含めない（providedRuntime）
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat-runtime'
+    // テスト用の部品一式（JUnitなど）。テストを書くときだけ使う
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // テストを実際に起動する係（JUnit Platform Launcher）。テストの実行時だけ必要
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 
-// jUnit使うよねという、当たり前の雛形として親切心で最初から用意されているもの
+// テストの実行設定。「テストにはJUnitを使う」という定番の設定で、Spring Initializrが最初から用意してくれている
 tasks.named('test') {
     useJUnitPlatform()
 }

@@ -17,11 +17,11 @@ import raisetech.StudentManagementSystem.data.StudentsCourses;
 public interface StudentRepository {
 
   /**
-   * 論理削除されていない受講生を全件検索します。
+   * 受講生を全件検索します（論理削除済みの受講生も含みます）。
    *
-   * @return 受講生一覧（削除済みを除く）
+   * @return 受講生一覧
    */
-  @Select("SELECT * FROM students WHERE is_deleted = false")
+  @Select("SELECT * FROM students")
   List<Student> search();
 
   /**

@@ -43,7 +43,7 @@ public class StudentController {
     // converterでList<StudentDetail>の形に整えてモデルに渡す
     // ここではHTMLで記述した${studentList}と同じ名前にする
     model.addAttribute("studentList", converter.convertStudentDetails(students, studentCourses));
-    // ここはテンプレートエンジンのファイル名と同名にするw
+    // ここはテンプレートエンジンのファイル名と同名にする
     return "studentList";
   }
 
@@ -96,6 +96,9 @@ public class StudentController {
    */
   // ⑤ HTML で「登録」ボタンが押されると、このメソッドが呼ばれる
   //    入力内容は、Spring Boot が studentDetail の中に自動で詰め込んでくれる
+  // GetでregisterStudent.htmlに送ったモデルは使われず、
+  // このPostハンドラメソッドでは引数の@ModelAttribute studentDetailをspringが見て
+  // 自動でモデル用のインスタンスを作成し用意してくれる。
   @PostMapping("/registerStudent")
   public String registerStudent(@ModelAttribute StudentDetail studentDetail, BindingResult result) {
     // ⑤-2 詰め込みの途中で問題があったか確認する

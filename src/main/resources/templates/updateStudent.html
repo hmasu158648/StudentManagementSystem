@@ -98,8 +98,12 @@
     <label><input type="radio" th:field="*{student.sex}" value="女性">女性</label>
   </div>
   <div>
-    <label for="remark">補足：</label>
+    <label for="remark">備考：</label>
     <input type="text" id="remark" th:field="*{student.remark}">
+  </div>
+  <div>
+    <label for="isDeleted">キャンセル</label>
+    <input type="checkbox" id="isDeleted" th:field="*{student.isDeleted}">キャンセル
   </div>
   <!-- コースの件数分だけ繰り返します（2件あれば2回表示されます） -->
   <div th:each="course, stat : *{studentsCourses}">
@@ -116,11 +120,6 @@
       <option value="Webマーケティングコース">Webマーケティングコース</option>
       <option value="フロントエンドコース">フロントエンドコース</option>
     </select>
-  </div>
-  <div>
-    <label>
-      <input type="checkbox" th:field="*{student.isDeleted}">キャンセル
-    </label>
   </div>
   <div>
     <!-- 【更新用】ボタンの文字を変更 -->

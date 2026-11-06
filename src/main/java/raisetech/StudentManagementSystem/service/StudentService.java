@@ -28,6 +28,7 @@ public class StudentService {
    */
   @Autowired // 「必要な部品（リポジトリ）をSpringが探して渡してね」という目印
   public StudentService(StudentRepository repository) {
+    // 受け取ったリポジトリを、このクラスのフィールドに保存して、以降のメソッドで使えるようにする
     this.repository = repository;
   }
 
@@ -37,6 +38,8 @@ public class StudentService {
    * @return 受講生一覧（全件）
    */
   public List<Student> searchStudentList() {
+    // ①リポジトリに依頼して、データベースから受講生を全件取得する
+    // ②取得した結果をそのまま呼び出し元（コントローラー）へ返す
     return repository.search();
   }
 
@@ -46,6 +49,8 @@ public class StudentService {
    * @return 受講生コース情報一覧（全件）
    */
   public List<StudentsCourses> searchStudentCourseList() {
+    // ①リポジトリに依頼して、データベースから受講生コース情報を全件取得する
+    // ②取得した結果をそのまま呼び出し元（コントローラー）へ返す
     return repository.searchStudentCoursesList();
   }
 
@@ -58,15 +63,16 @@ public class StudentService {
    */
   @Transactional // 全部成功したら確定、途中で失敗したら最初の状態に戻す（受講生だけ登録されて、コースが登録されない状態を防ぐ）
   public void registerStudent(StudentDetail studentDetail) {
+    // 【流れ】受講生を登録 → 採番されたidを取得 → 各コースにidと開始日時をセットして登録
     // 1. まず受講生を登録する。登録すると、データベースが決めたid（自動採番）が受講生オブジェクトにセットされる
     repository.registerStudent(studentDetail.getStudent());
-    // コースを1件ずつ取り出して、同じ処理を繰り返す
+    // コースを1件ずつ取り出して、同じ処理を繰り返す（コースの数だけ2-1〜2-3が実行される）
     for (StudentsCourses studentCourses : studentDetail.getStudentsCourses()) {
       // 2-1. どの受講生のコースかを示すため、受講生の id をセットする
       studentCourses.setStudentId(studentDetail.getStudent().getId());
       // 2-2. 開始日に登録日（今の日時）をセットする（終了日は空のまま）
       studentCourses.setCourseStartAt(LocalDateTime.now());
-      // 2-3. コースを登録する
+      // 2-3. id・開始日時がそろったコースを、リポジトリを通してデータベースに登録する
       repository.registerStudentCourse(studentCourses);
     }
   }
@@ -105,10 +111,12 @@ public class StudentService {
    */
   @Transactional // 受講生とコースの更新を1セットとして扱い、途中で失敗したら全部元に戻す
   public void updateStudent(StudentDetail studentDetail) {
+    // 【流れ】受講生情報を更新 → コース情報を1件ずつ更新（どちらかが失敗したら全部元に戻る）
     // ①studentDetailからstudentオブジェクトを取り出して受講生情報を更新する（idが一致する受講生が更新される）
     repository.updateStudent(studentDetail.getStudent());
     // ②コース情報を1件ずつ取り出して更新する（コースごとのidで、更新するコースを特定する）
     for (StudentsCourses studentsCourses : studentDetail.getStudentsCourses()) {
+      // ③取り出した1件のコース情報をデータベースに反映する
       repository.updateStudentCourse(studentsCourses);
     }
   }

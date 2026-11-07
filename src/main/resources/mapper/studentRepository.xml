@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="raisetech.StudentManagementSystem.repository.StudentRepository">
+
+  <!--  受講生を全件検索します（論理削除済みの受講生も含みます）。-->
+  <!--  ① id="search"：Javaのインターフェースのsearch()メソッドと結びつく名前 -->
+  <!--  ② resultType：取得した1行をStudentクラスに詰める（列名はキャメルケースに自動変換される） -->
+  <!--  ③ SELECT文：studentsテーブルの全行・全列を取得する。複数行なのでListで返る -->
+  <select id="search" resultType="raisetech.StudentManagementSystem.data.Student">
+    SELECT * FROM students
+  </select>
+
+  <!--  受講生をidで1人だけ検索します。-->
+  <!--  ① id="searchStudent"：searchStudent(Integer id)メソッドと結びつく -->
+  <!--  ② #{id}：メソッドの引数idの値がここに入る -->
+  <!--  ③ WHERE id = ...：idが一致する1行だけを取得し、Studentに詰めて返す（なければnull） -->
+  <select id="searchStudent" resultType="raisetech.StudentManagementSystem.data.Student">
+    SELECT * FROM students WHERE id = #{id}
+  </select>
+
+  <!--  受講生コース情報を全件検索します。-->
+  <!--  ① id="searchAllStudentCoursesList"：同名のJavaメソッドと結びつく -->
+  <!--  ② resultType：取得した1行をStudentCourseクラスに詰める -->
+  <!--  ③ SELECT文：students_coursesテーブルの全行・全列を取得し、Listで返す -->
+  <select id="searchAllStudentCoursesList" resultType="raisetech.StudentManagementSystem.data.StudentCourse">
+    SELECT * FROM students_courses
+  </select>
+
+
+  <!--  受講生IDに紐づく受講生コース情報を検索します。-->
+  <!--  ① id="searchStudentCourseList"：searchStudentCourseList(Integer studentId)メソッドと結びつく -->
+  <!--  ② resultType：取得した各行をStudentCourseクラスに詰める -->
+  <!--  ③ #{studentId}：メソッドの引数studentIdの値がここに入る -->
+  <!--  ④ WHERE student_id = ...：student_idが一致するコース情報だけを取得し、Listで返す -->
+  <select id="searchStudentCourseList" resultType="raisetech.StudentManagementSystem.data.StudentCourse">
+    SELECT * FROM students_courses WHERE student_id = #{studentId}
+  </select>
+
+  <!-- 受講生を新規登録します。採番されたidは引数のstudentに設定されます。 -->
+  <!-- ① #{name}など：引数のstudentの各フィールドの値が、VALUESの対応する位置に入る -->
+  <!-- ② is_deleted：引数の値ではなく、SQLに直接書かれた false（未削除）で登録される -->
+  <!-- ③ useGeneratedKeys / keyProperty：自動採番されたidをstudentのidフィールドに反映する -->
+  <insert id="registerStudent" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO students (name, kana_name, nickname, email, area, age, sex, remark, is_deleted)
+    VALUES (#{name}, #{kanaName}, #{nickname}, #{email}, #{area}, #{age}, #{sex}, #{remark}, false)
+  </insert>
+
+  <!-- 受講生コース情報を新規登録します。採番されたidは引数に設定されます。 -->
+  <!-- ① 引数のstudentCourseの値が、VALUESの対応する位置に入る -->
+  <!-- ② useGeneratedKeys / keyProperty：自動採番されたidをstudentCourseのidフィールドに反映する -->
+  <insert id="registerStudentCourse" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO students_courses (student_id, course_name, course_start_at, course_end_at)
+    VALUES (#{studentId}, #{courseName}, #{courseStartAt}, #{courseEndAt})
+  </insert>
+
+  <!-- 受講生情報を更新します。削除フラグ(is_deleted)も更新対象のため、論理削除にも利用できます。 -->
+  <!-- ① 引数のstudentの各フィールドの値を、SETの各列に入れる -->
+  <!-- ② WHEREのidが一致する1行だけを更新する（idを指定しないと全行が更新されてしまう） -->
+  <update id="updateStudent">
+    UPDATE students
+    SET name = #{name}, kana_name = #{kanaName}, nickname = #{nickname}, email = #{email},
+    area = #{area}, age = #{age}, sex = #{sex}, remark = #{remark}, is_deleted = #{isDeleted}
+    WHERE id = #{id}
+  </update>
+
+  <!-- 受講生コース情報のコース名を更新します。 -->
+  <!-- ① 引数のcourseNameを、SETのcourse_nameに入れる -->
+  <!-- ② WHEREのidが一致するコース1行だけを更新する（コース名以外の列は変わらない） -->
+  <update id="updateStudentCourse">
+    UPDATE students_courses
+    SET course_name = #{courseName}
+    WHERE id = #{id}
+  </update>
+
+</mapper>

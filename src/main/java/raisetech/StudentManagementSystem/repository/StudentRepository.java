@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import raisetech.StudentManagementSystem.data.Student;
-import raisetech.StudentManagementSystem.data.StudentsCourses;
+import raisetech.StudentManagementSystem.data.StudentCourse;
 
 /**
  * 受講生情報および受講生コース情報を扱うリポジトリです。
@@ -45,9 +45,9 @@ public interface StudentRepository {
    * @return 受講生コース情報一覧（全件）
    */
   // ① students_coursesテーブルの全行・全列を取得する
-  // ② 各行をStudentsCoursesに詰め、Listにまとめて返す
+  // ② 各行をStudentCourseに詰め、Listにまとめて返す
   @Select("SELECT * FROM students_courses")
-  List<StudentsCourses> searchStudentCoursesList();
+  List<StudentCourse> searchAllStudentCoursesList();
 
   /**
    * 受講生IDに紐づく受講生コース情報を検索します。
@@ -58,7 +58,7 @@ public interface StudentRepository {
   // ① 引数のstudentId が #{studentId} の部分に入る
   // ② student_idが一致するコース情報だけを取得し、Listにまとめて返す
   @Select("SELECT * FROM students_courses WHERE student_id = #{studentId}")
-  List<StudentsCourses> searchStudentCourses(Integer studentId);
+  List<StudentCourse> searchStudentCourseList(Integer studentId);
 
   /**
    * 受講生を新規登録します。
@@ -68,6 +68,7 @@ public interface StudentRepository {
    */
   // ① 引数のstudentの各フィールド（#{name}など）の値を、VALUESの対応する位置に入れる
   // ② studentsテーブルに1行追加する（SQL内にコメントは書けないため、ここで説明する）
+  //    削除フラグ(is_deleted)は引数の値ではなく、SQLに直接書かれた false（未削除）で登録される
   @Insert("""
       INSERT INTO students(name, kana_name, nickname,email,area,age,sex,remark,is_deleted)
       VALUES(#{name}, #{kanaName},#{nickname},#{email},#{area},#{age},#{sex},#{remark},
@@ -80,20 +81,21 @@ public interface StudentRepository {
 
   /**
    * 受講生コース情報を新規登録します。
-   * コース終了日時は登録時点では未定のためNULLとし、採番されたidは引数に設定されます。
+   * コース開始日時・終了日時は引数の値をそのまま登録し、採番されたidは引数に設定されます。
    *
-   * @param studentCourses 登録する受講生コース情報
+   * @param studentCourse 登録する受講生コース情報
    */
-  // ① 引数のstudentCoursesの値（#{studentId}など）を、VALUESの対応する位置に入れる
-  // ② students_coursesテーブルに1行追加する（終了日時はNULLのまま）
+  // ① 引数のstudentCourseの値（#{studentId}、#{courseName}、#{courseStartAt}、#{courseEndAt}）を、
+  //    VALUESの対応する位置に入れる（列の並びとVALUESの並びが同じ順番で対応する）
+  // ② students_coursesテーブルに1行追加する（開始日時・終了日時はServiceでセットされた値が入る）
   @Insert("""
       INSERT INTO students_courses(student_id, course_name,course_start_at,course_end_at)
-      VALUES(#{studentId}, #{courseName}, #{courseStartAt},NULL)
+      VALUES(#{studentId}, #{courseName}, #{courseStartAt},#{courseEndAt})
       """)
   // ③ 追加後、データベースが自動採番したidを取得する
-  // ④ 自動採番されたidをstudentCoursesのidフィールドに反映する
+  // ④ 自動採番されたidをstudentCourseのidフィールドに反映する
   @Options(useGeneratedKeys = true, keyProperty = "id")
-  void registerStudentCourse(StudentsCourses studentCourses);
+  void registerStudentCourse(StudentCourse studentCourse);
 
   /**
    * 受講生情報を更新します。
@@ -113,14 +115,14 @@ public interface StudentRepository {
   /**
    * 受講生コース情報のコース名を更新します。
    *
-   * @param studentsCourses 更新する受講生コース情報（idで更新対象を特定）
+   * @param studentsCourse 更新する受講生コース情報（idで更新対象を特定）
    */
-  // ① 引数のstudentsCoursesのcourseNameを、SETのcourse_nameに入れる
+  // ① 引数（studentsCourse）のcourseNameを、SETのcourse_nameに入れる
   // ② WHEREのidが一致するコース1行だけを更新する（コース名以外の列は変わらない）
   @Update("""
       UPDATE students_courses
       SET course_name=#{courseName}
       WHERE id = #{id}
       """)
-  void updateStudentCourse(StudentsCourses studentsCourses);
+  void updateStudentCourse(StudentCourse studentsCourse);
 }

@@ -1,5 +1,6 @@
 package raisetech.StudentManagementSystem.domain;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +24,12 @@ import raisetech.StudentManagementSystem.data.StudentCourse;
 public class StudentDetail {
 
   // 受講生1人分の基本情報（名前・メールアドレスなど）
+  // @Valid：中のStudentに付けた入力チェック（必須・文字数など）も、あわせて確認する
+  @Valid
   private Student student;
+
   // その受講生が受講するコース情報の一覧（コースは複数持てるのでList）
+  // @Valid：Listの中の各StudentCourseに付けた入力チェックも、1件ずつ確認する
+  @Valid
   private List<StudentCourse> studentCourseList;
 }

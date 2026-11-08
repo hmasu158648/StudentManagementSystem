@@ -1,6 +1,8 @@
 package raisetech.StudentManagementSystem.data;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -19,12 +21,19 @@ public class StudentCourse {
 
   // コースを区別するためのID（データベースが自動で採番する。students_coursesテーブルのid列）
   private Integer id;
+
   // このコースを受講している受講生のID（studentsテーブルのidと同じ値。student_id列）
   private Integer studentId;
+
   // コース名（例：Javaコースなど。course_name列）
+  // @NotBlank：空・空白だけは不可（必須）／ @Size(max = 50)：50文字以内
+  @NotBlank
+  @Size(max = 50)
   private String courseName;
+
   // コースの開始日時（登録時にServiceが「今」をセットする。course_start_at列）
   private LocalDateTime courseStartAt;
+
   // コースの終了日時（登録時にServiceが「今から1年後」をセットする。course_end_at列）
   private LocalDateTime courseEndAt;
 }

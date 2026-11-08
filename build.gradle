@@ -50,6 +50,9 @@ dependencies {
     // Thymeleaf：HTMLのひな形にデータを埋め込んで、画面（HTML）を作るための道具
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
+    // Validation：入力された値が正しいか（空でないか、長さは適切かなど）をチェックするための道具
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     // Apache Commons Lang：文字列の判定など、よく使う便利な機能（ユーティリティー）を集めたライブラリ
     implementation("org.apache.commons:commons-lang3:3.21.0")
 

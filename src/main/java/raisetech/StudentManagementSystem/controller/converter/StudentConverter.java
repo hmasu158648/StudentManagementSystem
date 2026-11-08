@@ -8,7 +8,8 @@ import raisetech.StudentManagementSystem.data.StudentCourse;
 import raisetech.StudentManagementSystem.domain.StudentDetail;
 
 /**
- * 受講生詳細を受講生や受講生コース情報、もしくはその逆の変換をおこなうコンバーターです。
+ * 受講生の一覧と受講生コース情報の一覧を、受講生詳細（StudentDetail）の一覧に変換するコンバーターです。
+ * （現在は「受講生＋コース → 受講生詳細」の一方向の変換のみで、逆方向の変換はありません）
  * Springのコンポーネントとして管理され、サービスから利用されます。
  */
 // @Component：Springが管理する部品として登録する（Serviceのコンストラクターに自動で渡される）

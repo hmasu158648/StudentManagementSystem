@@ -8,6 +8,8 @@ import raisetech.StudentManagementSystem.data.StudentCourse;
 /**
  * 受講生情報および受講生コース情報を扱うリポジトリです。
  * MyBatisのマッパーとして、studentsテーブルとstudents_coursesテーブルへのSQLを実行します。
+ * SQLはXMLファイル(resources/mapper/studentRepository.xml)に書かれており、
+ * XMLの各SQLのid・#{...}の名前は、このインターフェースのメソッド名・引数（のフィールド）名と一致させる必要があります。
  */
 // @Mapper：MyBatisがこのインターフェースの実装クラスを自動で作ってくれる目印（自分で実装は書かない）
 // このインターフェースにはメソッドの宣言だけがあり、SQLはすべてXMLファイル(mapper/studentRepository.xml)に書かれている

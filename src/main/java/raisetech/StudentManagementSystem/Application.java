@@ -18,6 +18,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *   StudentConverter … 受講生とコース情報をStudentDetailにまとめる（controller/converterパッケージ）
  *   Student / StudentCourse … テーブルの1行に対応するデータ（dataパッケージ）
  *   StudentDetail … 受講生とそのコース一覧を1セットにしたデータ（domainパッケージ）
+ *   TestException … 例外の動作確認用の独自例外（exceptionパッケージ）
+ *   GlobalExceptionHandler … 全コントローラー共通の例外処理。TestExceptionを400エラーに変換する（exception/handlerパッケージ）
  * </pre>
  */
 // @SpringBootApplication：Spring Bootアプリの起動に必要な設定をまとめて有効にする目印

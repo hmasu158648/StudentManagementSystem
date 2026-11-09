@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.StudentManagementSystem.domain.StudentDetail;
+import raisetech.StudentManagementSystem.exception.TestException;
 import raisetech.StudentManagementSystem.service.StudentService;
 
 /**
@@ -25,10 +26,12 @@ import raisetech.StudentManagementSystem.service.StudentService;
  *   <li>GET  /student/{id}    … 指定したidの受講生詳細を取得</li>
  *   <li>POST /registerStudent … 受講生詳細を新規登録</li>
  *   <li>PUT  /updateStudent   … 受講生詳細を更新</li>
+ *   <li>GET  /testException   … 例外処理の動作確認専用（常にTestExceptionを発生させる）</li>
  * </ul>
  * このクラスは受付と入力チェックだけを行い、実際の処理はServiceに任せます。
+ * 例外が発生したときの返し方は、共通の例外処理クラス（GlobalExceptionHandler）が決めています。
  */
-// @Validated：メソッドの引数に付けた入力チェック（@Min・@Maxなど）を有効にする
+// @Validated：メソッドの引数に付けた入力チェック（@Minなど）を有効にする
 @Validated
 @RequiredArgsConstructor // Lombokが代わりにfinalフィールドのコンストラクターを作成してくれる。
 // @RestController：このクラスのメソッドの戻り値を、画面ではなくレスポンスボディ（JSONや文字列）として返す
@@ -42,7 +45,7 @@ public class StudentController {
    * 受講生一覧を取得します。
    * 受講生とコース情報を全件取得し、受講生ごとの詳細情報にまとめて返します。
    *
-   * @return 受講生詳細の一覧（レスポンスボディとして返されます）
+   * @return 受講生詳細の一覧
    */
   // ① 【受講生一覧】http://localhost:8080/studentList にGETリクエストすると呼ばれる
   //    引数は不要（一覧は全件取得するため、リクエストから受け取る値がない）
@@ -62,7 +65,8 @@ public class StudentController {
    */
   // ① 例：http://localhost:8080/student/1 にGETリクエストすると呼ばれ、URLの「1」がidに入る
   //    （@PathVariableが、URLの{id}部分を引数idに取り出してくれる）
-  // ※ @Min(1)：idが1以上を入力チェックする（範囲外ならエラーになり、処理は実行されない）
+  // ※ @Min(1)：idが1以上かを入力チェックする（0以下ならエラーになり、処理は実行されない）
+  //    数値以外（例：/student/abc）は、Integerに変換できないため、こちらもエラーになる
   @GetMapping("/student/{id}")
   public StudentDetail getStudent(@PathVariable @Min(1) Integer id) {
     // ② Serviceを通して、idに一致する受講生とそのコース情報を検索する
@@ -108,5 +112,18 @@ public class StudentController {
     service.updateStudent(studentDetail);
     // ③ 更新が成功したことを示すメッセージを、ステータス200で返す
     return ResponseEntity.ok("更新処理が成功しました");
+  }
+
+  /**
+   * 例外処理の動作確認専用のメソッドです。
+   * 他の機能には影響せず、常にTestExceptionを発生させます。
+   *
+   * @throws TestException 常に発生する（動作確認用の例外）
+   */
+  // ① http://localhost:8080/testException にGETリクエストすると呼ばれる
+  //    発生した例外は、共通の例外処理クラス（GlobalExceptionHandler）が受け止める
+  @GetMapping("/testException")
+  public void throwTestException() throws TestException {
+    throw new TestException("このエラーは動作確認のために意図的に発生させたものです。");
   }
 }

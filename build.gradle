@@ -1,7 +1,7 @@
 plugins {
     id 'java' // Javaのプログラムをコンパイル（機械が読める形に変換）して動かすための基本の機能
     id 'war' // Webアプリを「.war」という1つのファイルにまとめる機能（外部のTomcatなどに配置する形式）
-    id 'org.springframework.boot' version '4.1.1' // Spring Bootを使うための機能とそのバージョン（ここで決めたバージョンに合わせて、dependenciesの多くはバージョン番号を省略できる）
+    id 'org.springframework.boot' version '4.1.2' // Spring Bootを使うための機能とそのバージョン（ここで決めたバージョンに合わせて、dependenciesの多くはバージョン番号を省略できる）
     id 'io.spring.dependency-management' version '1.1.7' // ライブラリ同士のバージョンが食い違わないように、相性のよい組み合わせを自動で管理してくれる機能
 }
 

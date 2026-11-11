@@ -1,5 +1,7 @@
 package raisetech.StudentManagementSystem;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -22,6 +24,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *   GlobalExceptionHandler … 全コントローラー共通の例外処理。TestExceptionを400エラーに変換する（exception/handlerパッケージ）
  * </pre>
  */
+// @OpenAPIDefinition：OpenAPI（Swagger）によるAPI仕様書全体の設定を、このクラスに置く目印
+// 　@Info(title = ...)：仕様書の表紙にあたる情報。ここではタイトルを「受講生管理システム」にしている
+// （各APIの内容は、コントローラーの内容から自動で作られる）
+@OpenAPIDefinition(
+    info = @Info(
+        title = "受講生管理システム",
+        description = "受講生とコース情報の検索・登録・更新を行うAPIです。",
+        version = "1.0.0"))
 // @SpringBootApplication：Spring Bootアプリの起動に必要な設定をまとめて有効にする目印
 // （このパッケージ以下の@Controller・@Service・@Componentなどを自動で探して登録する）
 @SpringBootApplication

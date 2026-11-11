@@ -1,5 +1,6 @@
 package raisetech.StudentManagementSystem.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,8 @@ import raisetech.StudentManagementSystem.data.StudentCourse;
  * データベースの1つのテーブルに対応するのではなく、画面やAPI（JSON）でやり取りするために
  * 「受講生」と「そのコース一覧」を1セットにしたものです。
  */
+// @Schema：Swagger UI（API仕様書の画面）に表示する、このクラスの説明（処理の動きには影響しない）
+@Schema(description = "受講生詳細")
 // @Data：Lombokが、getter・setter・toString・equals・hashCodeを自動で作ってくれる
 @Data
 // @NoArgsConstructor：引数なしのコンストラクターを自動で作る
@@ -25,11 +28,13 @@ public class StudentDetail {
 
   // 受講生1人分の基本情報（名前・メールアドレスなど）
   // @Valid：中のStudentに付けた入力チェック（必須・文字数など）も、あわせて確認する
+  @Schema(description = "受講生の基本情報")
   @Valid
   private Student student;
 
   // その受講生が受講するコース情報の一覧（コースは複数持てるのでList）
   // @Valid：Listの中の各StudentCourseに付けた入力チェックも、1件ずつ確認する
+  @Schema(description = "受講生が受講するコース情報の一覧")
   @Valid
   private List<StudentCourse> studentCourseList;
 }

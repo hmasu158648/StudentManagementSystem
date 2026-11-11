@@ -76,6 +76,7 @@ public class StudentService {
    * 受講生とコース情報を新規登録します。
    * 受講生を登録したあと、採番された受講生ID・開始日時（現在日時）・終了日時（1年後）を各コースにセットして登録します。
    * （リクエストで送られた開始日時・終了日時は使わず、Serviceがセットした値で上書きされます）
+   * 削除フラグは、リクエストの値にかかわらず未削除（false）で登録されます。
    * 処理の途中でエラーが発生した場合は、すべての登録を取り消します。
    *
    * @param studentDetail 登録する受講生情報とコース情報
@@ -89,7 +90,12 @@ public class StudentService {
     // 1-1. 受講生詳細から、受講生情報(student)を取り出しておく（この後で何度も使うため）
     Student student = studentDetail.getStudent();
 
-    // 1-2. 受講生を登録する。登録すると、データベースが決めたid（自動採番）がstudentにセットされる
+    // 1-2. 新規登録時は、必ず「未削除（false）」にする
+    // （SQLでもfalseで登録しているが、返すオブジェクトにも同じ値を入れて、レスポンスとデータベースを一致させる。
+    // リクエストでisDeletedにtrueが送られてきても、falseで上書きされる）
+    student.setIsDeleted(false);
+
+    // 1-3. 受講生を登録する。登録すると、データベースが決めたid（自動採番）がstudentにセットされる
     repository.registerStudent(student);
     // 2. コース情報を1件ずつ取り出して、forEach（ラムダ式）で同じ処理を繰り返す
     //    （studentCourseが、取り出した1件のコース。コースの数だけ2-1・2-2が実行される）

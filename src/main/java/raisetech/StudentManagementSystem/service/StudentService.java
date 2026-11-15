@@ -100,8 +100,8 @@ public class StudentService {
     // 2. コース情報を1件ずつ取り出して、forEach（ラムダ式）で同じ処理を繰り返す
     //    （studentCourseが、取り出した1件のコース。コースの数だけ2-1・2-2が実行される）
     studentDetail.getStudentCourseList().forEach(studentCourse -> {
-      // 2-1. コースに、受講生id・開始日時・終了日時をセットする（詳細は下のinitStudentDetailメソッド）
-      initStudentDetail(studentCourse, student);
+      // 2-1. コースに、受講生id・開始日時・終了日時をセットする（詳細は下のinitStudentCourseメソッド）
+      initStudentCourse(studentCourse, student);
       // 2-2. 必要な値がそろったコースを、リポジトリを通してデータベースに登録する
       repository.registerStudentCourse(studentCourse);
     });
@@ -112,12 +112,11 @@ public class StudentService {
 
   /**
    * 新規登録するコース情報に、受講生idと開始日時・終了日時を初期値としてセットします。
-   * （メソッド名は「StudentDetail」ですが、実際に初期化しているのはコース情報(StudentCourse)です）
    *
    * @param studentCourse 初期値をセットするコース情報
    * @param student       コースの持ち主である受講生（登録済みで、idが採番されている）
    */
-  private void initStudentDetail(StudentCourse studentCourse, Student student) {
+  private void initStudentCourse(StudentCourse studentCourse, Student student) {
     // (1) 今の日時を1回だけ取得しておく（開始日時と終了日時で同じ「今」を使うため）
     LocalDateTime now = LocalDateTime.now();
 
@@ -140,10 +139,11 @@ public class StudentService {
     // 【流れ】受講生情報を更新 → コース情報を1件ずつ更新（どちらかが失敗したら全部元に戻る）
     // ①studentDetailからstudentオブジェクトを取り出して受講生情報を更新する（idが一致する受講生が更新される）
     repository.updateStudent(studentDetail.getStudent());
-    // ②コース情報の一覧を、forEachで1件ずつ取り出して処理する
-    // ③取り出した1件ごとに repository.updateStudentCourse を呼び、データベースに反映する
-    //   （「repository::updateStudentCourse」はメソッド参照で、
-    //     「course -> repository.updateStudentCourse(course)」と同じ意味。コースごとのidで更新対象を特定する）
-    studentDetail.getStudentCourseList().forEach(repository::updateStudentCourse);
+    // ②コース情報の一覧から、拡張for文で1件ずつ取り出して処理する（studentCourseが取り出した1件）
+    for (StudentCourse studentCourse : studentDetail.getStudentCourseList()) {
+      // ③取り出した1件ごとに repository.updateStudentCourse を呼び、データベースに反映する
+      //   （コースごとのidで更新対象を特定する）
+      repository.updateStudentCourse(studentCourse);
+    }
   }
 }

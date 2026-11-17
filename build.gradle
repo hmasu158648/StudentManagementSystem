@@ -80,6 +80,9 @@ dependencies {
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat-runtime'
     // テスト用の部品一式（JUnitなど）。テストを書くときだけ使う
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // Controllerのテスト用の部品（@WebMvcTest、MockMvcなど）。
+    // Spring Boot 4から、Web(MVC)のテスト用の道具はこの別の部品に分けられたため追加している
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     // Mockitoを「エージェント」としてテスト開始時に読み込むための指定。
     // バージョンはSpring Bootが管理しているので省略できる。transitive = falseは関連ライブラリまで取り込まないという意味
     mockitoAgent('org.mockito:mockito-core') {

@@ -101,7 +101,7 @@ public class StudentService {
     //    （studentCourseが、取り出した1件のコース。コースの数だけ2-1・2-2が実行される）
     studentDetail.getStudentCourseList().forEach(studentCourse -> {
       // 2-1. コースに、受講生id・開始日時・終了日時をセットする（詳細は下のinitStudentCourseメソッド）
-      initStudentCourse(studentCourse, student);
+      initStudentCourse(studentCourse, student.getId());
       // 2-2. 必要な値がそろったコースを、リポジトリを通してデータベースに登録する
       repository.registerStudentCourse(studentCourse);
     });
@@ -114,14 +114,14 @@ public class StudentService {
    * 新規登録するコース情報に、受講生idと開始日時・終了日時を初期値としてセットします。
    *
    * @param studentCourse 初期値をセットするコース情報
-   * @param student       コースの持ち主である受講生（登録済みで、idが採番されている）
+   * @param studentId     コースの持ち主である受講生（登録済みで、idが採番されている）
    */
-  private void initStudentCourse(StudentCourse studentCourse, Student student) {
+  private void initStudentCourse(StudentCourse studentCourse, Integer studentId) {
     // (1) 今の日時を1回だけ取得しておく（開始日時と終了日時で同じ「今」を使うため）
     LocalDateTime now = LocalDateTime.now();
 
     // (2) どの受講生のコースかを示すため、受講生の id をセットする
-    studentCourse.setStudentId(student.getId());
+    studentCourse.setStudentId(studentId);
     // (3) 開始日時に登録時点の日時（今）をセットする
     studentCourse.setCourseStartAt(now);
     // (4) 終了日時に「今から1年後」の日時をセットする（plusYears(1)で1年分進める）

@@ -136,12 +136,13 @@ class StudentControllerTest {
   void 受講生詳細の検索が実行できて_サービスの検索がIDを渡して１回呼ばれること() throws Exception {
     // 【実行】番号「1」を指定して、受講生を探すURLにGETでアクセスしたふりをする
     // （{id}の部分に、get()の2番目の引数「1」が入る）
-    mockMvc.perform(get("/student/{id}", 1))
+    Integer id = 1;
+    mockMvc.perform(get("/student/{id}", id))
         // 【検証】①結果の番号（ステータスコード）が200（成功）であること
         .andExpect(status().isOk());
 
     // ②受付係（Controller）が、Serviceの検索（searchStudent）を、番号「1」を渡して、ちょうど1回呼んだこと
-    verify(service, times(1)).searchStudent(1);
+    verify(service, times(1)).searchStudent(id);
   }
 
   /**
@@ -156,14 +157,15 @@ class StudentControllerTest {
     // 【事前準備】番号（ID）が1の受講生を用意し、コースが0件の受講生詳細に包む
     // （List.of()＝中身が空っぽのリスト）
     Student student = createValidStudent();
-    student.setId(1);
+    Integer id = 1;
+    student.setId(id);
     StudentDetail studentDetail = new StudentDetail(student, List.of());
     // 偽物のServiceに「番号1で探しに来られたら、この受講生詳細を渡してね」と約束させる
     // （when(...).thenReturn(...)＝「もし～されたら、～を返す」という約束）
     when(service.searchStudent(1)).thenReturn(studentDetail);
 
     // 【実行】番号「1」を指定して、受講生を探すURLにGETでアクセスしたふりをする
-    mockMvc.perform(get("/student/{id}", 1))
+    mockMvc.perform(get("/student/{id}", id))
         // 【検証】①ステータスコードが200（成功）であること
         .andExpect(status().isOk())
         // ②返ってきたJSONの student → id が 1 であること

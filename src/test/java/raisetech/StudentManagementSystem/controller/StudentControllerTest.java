@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -287,7 +288,8 @@ class StudentControllerTest {
     // 【実行】わざと例外が起きるURLに、GETでアクセスしたふりをする
     mockMvc.perform(get("/testException"))
         // 【検証】例外処理クラスが受け止めて、ステータスコードが400になっていること
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string("このエラーは動作確認のために意図的に発生させたものです。"));
   }
 
   /**

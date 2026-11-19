@@ -48,10 +48,12 @@ class StudentControllerTest {
 
   // ==================== ① 定数（テストで共通に使う、変更しない値） ====================
 
-  // 「ルールを守った、正しい」受講生詳細のJSON（＝データを文字で表した書き方）。
-  // 登録・更新のテストで、お客さんが送ってくる「注文の中身」として使う。
-  // student（受講生）と、studentCourseList（受講するコースのリスト）が入っている
-  // （static final＝すべてのテストで共通に使う、変更しない値。""" ～ """ は、複数行の文字をそのまま書ける書き方）
+  /**
+   * 「ルールを守った、正しい」受講生詳細のJSON（＝データを文字で表した書き方）です。
+   * 登録・更新のテストで、お客さんが送ってくる「注文の中身」として使います。
+   * student（受講生）と、studentCourseList（受講するコースのリスト）が入っています。
+   * （static final＝すべてのテストで共通に使う、変更しない値。""" ～ """ は、複数行の文字をそのまま書ける書き方）
+   */
   private static final String VALID_STUDENT_DETAIL_JSON = """
       {
         "student": {
@@ -65,9 +67,11 @@ class StudentControllerTest {
       }
       """;
 
-  // 「ルールを破っている」受講生詳細のJSON。上の正しいJSONとの違いは、
-  // ふりがな（kanaName）が、全角カタカナではなくひらがなになっている点だけ。
-  // 入力チェックで、ちゃんとはじかれる（400が返る）かを確かめるために使う
+  /**
+   * 「ルールを破っている」受講生詳細のJSONです。
+   * 上の正しいJSONとの違いは、ふりがな（kanaName）が、全角カタカナではなくひらがなになっている点だけです。
+   * 入力チェックで、ちゃんとはじかれる（400が返る）かを確かめるために使います。
+   */
   private static final String INVALID_STUDENT_DETAIL_JSON = """
       {
         "student": {
@@ -81,28 +85,61 @@ class StudentControllerTest {
       }
       """;
 
-  // ==================== ② テスト用の道具（アクセスのふり役 と ものまね役のService） ====================
+  // ==================== ② mockMvc（アクセスのふり役） ====================
 
-  // MockMvc（モックエムブイシー）：本物のサーバーを動かさなくても、
-  // 「このURLにアクセスしたよ」というふりができる道具。Springが自動で用意してくれる
+  /**
+   * MockMvc（モックエムブイシー）は、本物のサーバーを動かさなくても、
+   * 「このURLにアクセスしたよ」というふりができる道具です。Springが自動で用意してくれます。
+   */
   @Autowired
   private MockMvc mockMvc;
 
-  // @MockitoBean：本物のServiceの代わりに、ものまね役（偽物）のServiceを使う、という目印。
-  // 偽物なので、DB（倉庫）には接続しない。「何回呼ばれたか」という記録だけが残るので、あとで確認できる
+  // ==================== ③ service（ものまね役のService） ====================
+
+  /**
+   * 本物のServiceの代わりに使う、ものまね役（偽物）の「作業をする人」です。
+   * 偽物なので、DB（倉庫）にはつながりません。「何回呼ばれたか」という記録だけが残るので、あとで確認できます。
+   *
+   * <p>【依存性の注入（DI）とは？】
+   * 受付係（Controller）は、仕事をするために作業をする人（Service）を必要としています。
+   * このように「Aさんの仕事には、Bさんが必要」という関係を「依存」といいます。
+   * 受付係は、作業をする人を自分で探しに行きません。
+   * かわりに Spring が、「はい、作業をする人をどうぞ」と、外から渡してくれます。
+   * この「外から渡してもらうしくみ」を、依存性の注入（DI）といいます。
+   * 渡す側の Spring は、渡すものを「道具箱」に入れて管理しています。
+   * この道具箱の正式な名前が「DIコンテナ」です。
+   *
+   * <p>【なぜ {@code @Mock} ではなく {@code @MockitoBean} なのか】
+   * このテストでは、受付係を自分では作らず、{@code @WebMvcTest} が Spring に作らせています。
+   * 作業をする人を渡すのも Spring なので、自分で偽物を手渡すことはできません。
+   * そこで、偽物を Spring の道具箱（DIコンテナ）に入れておきます。
+   * 本物の Service がすでに入る予定なら、本物のかわりに偽物が入ります。
+   * すると Spring は、受付係を作るときに、道具箱から偽物を取り出して渡してくれます。
+   * {@code @MockitoBean} は、この「偽物を作る」と「偽物を DIコンテナ（道具箱）に入れる」を、まとめてやってくれます。
+   * <ul>
+   *   <li>{@code @Mock}：偽物を作るだけ。DIコンテナには入らない。自分で渡せるテスト向き（StudentServiceTest で使用）</li>
+   *   <li>{@code @MockitoBean}：偽物を作って DIコンテナに入れる。Spring が渡すテスト向き（ここで使用）</li>
+   * </ul>
+   */
+  // @MockitoBean：偽物のServiceを使う、という目印
+  // （※ 古い @MockBean の後継。Spring Boot 3.4 以降は @MockitoBean を使う）
   @MockitoBean
   private StudentService service;
 
-  // ==================== ③ 入力チェック用の道具（入力チェックの先生） ====================
+  // ==================== ④ validator（入力チェックの先生） ====================
 
-  // Validator（バリデーター）は「入力チェックの先生」のようなもの。
-  // たとえば「名前は空っぽはダメ」「IDは1以上」といったルールを、データクラスに書いてある。
-  // その先生に「このデータ、ルールを守れているか見て」とお願いすると、
-  // ルールを破っているところを、一覧にして教えてくれる。
+  /**
+   * Validator（バリデーター）は「入力チェックの先生」のようなものです。
+   * たとえば「名前は空っぽはダメ」「IDは1以上」といったルールを、データクラスに書いてあります。
+   * その先生に「このデータ、ルールを守れているか見て」とお願いすると、
+   * ルールを破っているところを、一覧にして教えてくれます。
+   * ※ サーバーにリクエストを送らなくても、データだけでチェックできるのが便利なところです。
+   */
   // 右側の Validation.buildDefaultValidatorFactory().getValidator() は、
-  // その先生を呼んでくる、おなじみの決まり文句（そのまま覚えて使えばOK）。
-  // ※ サーバーにリクエストを送らなくても、データだけでチェックできるのが便利なところ
+  // その先生を呼んでくる、おなじみの決まり文句（そのまま覚えて使えばOK）
   private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+  // ==================== 【正常系】MockMvc：受付係がうまく動く場合のテスト ====================
 
   /**
    * 受講生の一覧を見るURL（/studentList）にアクセスしたときの動きを確認するテストです。
@@ -176,25 +213,6 @@ class StudentControllerTest {
   }
 
   /**
-   * 受講生を探すURLの番号（ID）に、数字ではなく文字（abc）を指定したとき、
-   * 「送った内容がまちがい（400）」が返り、Serviceには頼まない（呼ばれない）ことを確認するテストです。
-   * 番号は整数のはずなのに文字が来たので、受付係の段階で追い返されます。
-   *
-   * @throws Exception アクセスのふりをする処理は、失敗する可能性があるため付けている
-   */
-  @Test
-  void 受講生詳細の検索でIDに数字以外を指定した場合_400が返りサービスは呼ばれないこと() throws Exception {
-    // 【実行】番号の代わりに、わざと文字「abc」を指定してアクセスしたふりをする
-    mockMvc.perform(get("/student/{id}", "abc"))
-        // 【検証】①ステータスコードが400（送った内容がまちがい）であること
-        .andExpect(status().isBadRequest());
-
-    // ②受付係が追い返したので、Serviceの検索は1回も呼ばれていないこと
-    // （never()＝1回も呼ばれていない。any()＝どんな値でもよい）
-    verify(service, never()).searchStudent(any());
-  }
-
-  /**
    * 正しい内容の受講生詳細を送って登録をお願いしたとき、
    * 結果が「成功（200）」で、Serviceに「登録をお願い」と、ちょうど1回頼んだことを確認するテストです。
    *
@@ -217,26 +235,6 @@ class StudentControllerTest {
   }
 
   /**
-   * ルールを破った内容（ふりがながひらがな）で登録をお願いしたとき、
-   * 「送った内容がまちがい（400）」が返り、Serviceには頼まない（呼ばれない）ことを確認するテストです。
-   * まちがったデータが、奥の作業をする人まで届かず、受付係の段階で止められるかを調べます。
-   *
-   * @throws Exception アクセスのふりをする処理は、失敗する可能性があるため付けている
-   */
-  @Test
-  void 受講生詳細の登録で入力チェックに掛かった場合_400が返りサービスは呼ばれないこと() throws Exception {
-    // 【実行】POSTで、ルールを破った内容（まちがったJSON）を送ったふりをする
-    mockMvc.perform(post("/registerStudent")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(INVALID_STUDENT_DETAIL_JSON))
-        // 【検証】①ステータスコードが400（送った内容がまちがい）であること
-        .andExpect(status().isBadRequest());
-
-    // ②入力チェックで止められたので、Serviceの登録は1回も呼ばれていないこと
-    verify(service, never()).registerStudent(any());
-  }
-
-  /**
    * 正しい内容の受講生詳細を送って更新（内容の書きかえ）をお願いしたとき、
    * 結果が「成功（200）」で、Serviceに「更新をお願い」と、ちょうど1回頼んだことを確認するテストです。
    *
@@ -256,6 +254,47 @@ class StudentControllerTest {
     // ②Serviceの更新（updateStudent）が、ちょうど1回呼ばれたこと
     // （any(StudentDetail.class)＝受講生詳細なら、中身は何でもよい）
     verify(service, times(1)).updateStudent(any(StudentDetail.class));
+  }
+
+  // ==================== 【異常系】MockMvc：うまくいかない場合のテスト ====================
+
+  /**
+   * 受講生を探すURLの番号（ID）に、数字ではなく文字（abc）を指定したとき、
+   * 「送った内容がまちがい（400）」が返り、Serviceには頼まない（呼ばれない）ことを確認するテストです。
+   * 番号は整数のはずなのに文字が来たので、受付係の段階で追い返されます。
+   *
+   * @throws Exception アクセスのふりをする処理は、失敗する可能性があるため付けている
+   */
+  @Test
+  void 受講生詳細の検索でIDに数字以外を指定した場合_400が返りサービスは呼ばれないこと() throws Exception {
+    // 【実行】番号の代わりに、わざと文字「abc」を指定してアクセスしたふりをする
+    mockMvc.perform(get("/student/{id}", "abc"))
+        // 【検証】①ステータスコードが400（送った内容がまちがい）であること
+        .andExpect(status().isBadRequest());
+
+    // ②受付係が追い返したので、Serviceの検索は1回も呼ばれていないこと
+    // （never()＝1回も呼ばれていない。any()＝どんな値でもよい）
+    verify(service, never()).searchStudent(any());
+  }
+
+  /**
+   * ルールを破った内容（ふりがながひらがな）で登録をお願いしたとき、
+   * 「送った内容がまちがい（400）」が返り、Serviceには頼まない（呼ばれない）ことを確認するテストです。
+   * まちがったデータが、奥の作業をする人まで届かず、受付係の段階で止められるかを調べます。
+   *
+   * @throws Exception アクセスのふりをする処理は、失敗する可能性があるため付けている
+   */
+  @Test
+  void 受講生詳細の登録で入力チェックに掛かった場合_400が返りサービスは呼ばれないこと() throws Exception {
+    // 【実行】POSTで、ルールを破った内容（まちがったJSON）を送ったふりをする
+    mockMvc.perform(post("/registerStudent")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(INVALID_STUDENT_DETAIL_JSON))
+        // 【検証】①ステータスコードが400（送った内容がまちがい）であること
+        .andExpect(status().isBadRequest());
+
+    // ②入力チェックで止められたので、Serviceの登録は1回も呼ばれていないこと
+    verify(service, never()).registerStudent(any());
   }
 
   /**
@@ -312,6 +351,8 @@ class StudentControllerTest {
     return student;
   }
 
+  // ==================== 【正常系】validator：ルールを守っているデータのテスト ====================
+
   /**
    * 全部ルールどおりの受講生なら、入力チェックで「違反なし（0件）」になることを確認するテストです。
    * 「正しいデータが、まちがって怒られない」ことを確かめています。
@@ -336,6 +377,26 @@ class StudentControllerTest {
   }
 
   /**
+   * コース名がきちんと入っている受講生コース情報なら、入力チェックで「違反なし（0件）」になることを確認するテストです。
+   * 「正しいデータが、まちがって怒られない」ことを確かめています。
+   */
+  @Test
+  void 受講生コース情報で適切な値を入力した時に入力チェックに異常が発生しないこと() {
+    // 【事前準備】コース名に「Javaコース」を入れた、ルールを守っている受講生コース情報を用意する
+    StudentCourse studentCourse = new StudentCourse();
+    studentCourse.setCourseName("Javaコース");
+
+    // 【実行】入力チェックの先生（validator）に、受講生コース情報を見てもらう
+    // （<StudentCourse> は「受講生コース情報についての違反」という意味）
+    Set<ConstraintViolation<StudentCourse>> violations = validator.validate(studentCourse);
+
+    // 【検証】違反の数が0件であること
+    assertThat(violations.size()).isEqualTo(0);
+  }
+
+  // ==================== 【異常系】validator：ルールを破っているデータのテスト ====================
+
+  /**
    * ふりがなに、全角カタカナではなくひらがなを入れると、入力チェックでルール違反になることを確認するテストです。
    * 「まちがったデータが、ちゃんと見つかる」ことを確かめています。
    * 違反は1件だけで、その場所がふりがな（kanaName）であることまで調べます。
@@ -358,24 +419,6 @@ class StudentControllerTest {
     assertThat(violations)
         .extracting(violation -> violation.getPropertyPath().toString())
         .containsOnly("kanaName");
-  }
-
-  /**
-   * コース名がきちんと入っている受講生コース情報なら、入力チェックで「違反なし（0件）」になることを確認するテストです。
-   * 「正しいデータが、まちがって怒られない」ことを確かめています。
-   */
-  @Test
-  void 受講生コース情報で適切な値を入力した時に入力チェックに異常が発生しないこと() {
-    // 【事前準備】コース名に「Javaコース」を入れた、ルールを守っている受講生コース情報を用意する
-    StudentCourse studentCourse = new StudentCourse();
-    studentCourse.setCourseName("Javaコース");
-
-    // 【実行】入力チェックの先生（validator）に、受講生コース情報を見てもらう
-    // （<StudentCourse> は「受講生コース情報についての違反」という意味）
-    Set<ConstraintViolation<StudentCourse>> violations = validator.validate(studentCourse);
-
-    // 【検証】違反の数が0件であること
-    assertThat(violations.size()).isEqualTo(0);
   }
 
   /**

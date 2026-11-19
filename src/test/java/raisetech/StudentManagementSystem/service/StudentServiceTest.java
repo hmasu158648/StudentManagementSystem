@@ -33,22 +33,53 @@ import raisetech.StudentManagementSystem.repository.StudentRepository;
  * 【たとえ話】Serviceは「作業をする人」、Repositoryは「倉庫（DB）の係」、Converterは「情報を整理する係」です。
  * 作業をする人が、必要な係に正しくお願いできているかを調べます。
  * 本物の倉庫は使わず、ものまね役（偽物）の係にお願いするので、DBがなくてもテストできます。
+ *
+ * <p>【用語】
+ * <ul>
+ *   <li>単体テスト：プログラムの小さな部分（ここではService）だけを取り出して、正しく動くか調べるテスト</li>
+ *   <li>正常系：入力も流れも正しい、うまくいく場合のテスト</li>
+ *   <li>異常系：エラーが起きる、うまくいかない場合のテスト</li>
+ * </ul>
+ *
+ * <p>【各テストの書き方の流れ】事前準備（材料をそろえる）→ 実行（テストしたい処理を動かす）→ 検証（結果が正しいか確かめる）
  */
 // @ExtendWith(MockitoExtension.class)：「ものまね役（@Mock）をこのテストで使うよ」という目印
 @ExtendWith(MockitoExtension.class)
 class StudentServiceTest {
 
-  // @Mock：本物ではなく、ものまね役（偽物）のRepositoryを作る目印。
-  // 偽物はDBには接続しない。「何回呼ばれたか」の記録だけ残るので、あとで確認できる
+  // ==================== ① repository（ものまね役の倉庫係） ====================
+
+  /**
+   * ものまね役（偽物）の「倉庫係」です。
+   * 本物の倉庫（DB）にはつながりません。そのかわり「何回お願いされたか」をメモしてくれるので、
+   * テストの最後に「ちゃんと頼まれたか」を確かめられます。
+   *
+   * <p>【なぜ @MockitoBean ではなく @Mock なのか】
+   * このテストでは、作業をする人（Service）を自分で new して、偽物の係を自分の手で渡しています。
+   * 自分で渡せるので、Spring の道具箱は不要です。偽物を作るだけの @Mock で足ります。
+   * （Spring に渡してもらうテスト、たとえば StudentControllerTest では @MockitoBean を使います）
+   */
+  // @Mock：本物ではなく、偽物のRepositoryを作る目印
   @Mock
   private StudentRepository repository;
 
-  // 同じく、ものまね役（偽物）のConverterを作る
+  // ==================== ② converter（ものまね役の整理係） ====================
+
+  /**
+   * ものまね役（偽物）の「整理係」です。
+   * 受講生の名簿とコースの名簿を1つにまとめる係ですが、このテストでは本物は使わず、
+   * 「ちゃんと頼まれたか」だけを確かめます。
+   */
   @Mock
   private StudentConverter converter;
 
-  // sut（サット）は System Under Test（＝テストされる対象）の略。
-  // ここでは「テストしたいStudentService」のこと
+  // ==================== ③ sut（テストされる対象のService） ====================
+
+  /**
+   * 今回テストされる本人（本物のStudentService）です。「作業をする人」にあたります。
+   * sut（サット）は System Under Test（＝テストされる対象）の略で、テストの世界でよく使う名前です。
+   * 各テストが始まる前に、偽物の係を持たせた新しいものが作られます。
+   */
   private StudentService sut;
 
   // @BeforeEach：「各テストが始まる前に、毎回これを実行してね」という目印（テスト前の準備係）
@@ -59,8 +90,14 @@ class StudentServiceTest {
     sut = new StudentService(repository, converter);
   }
 
-  // 受講生の一覧検索（searchStudentList）が、Repositoryに「受講生」と「コース」の全件をお願いし、
-  // そのリストをConverterに渡していることを確認するテスト
+  // ==================== 【正常系】うまくいく場合のテスト ====================
+
+  /**
+   * 【正常系】受講生の一覧を調べる機能（searchStudentList）のテストです。
+   * たとえるなら「全員の名簿をください」と言われた作業役（Service）が、
+   * ①倉庫係（Repository）に「受講生の名簿」と「コースの名簿」をそれぞれ1回ずつ頼み、
+   * ②もらった2つの名簿を整理係（Converter）に渡して1つにまとめてもらえているか、を確かめます。
+   */
   // @Test：「これはテストだよ」という目印（JUnitが自動で実行する）。
   // テスト名は日本語で「何をテストして、どうなればOKか」を表している
   @Test
@@ -81,6 +118,7 @@ class StudentServiceTest {
     // 【検証】作業をする人（Service）が、各係に正しくお願いしたかを確認する
     // 下の1行は、値を比べる場合の書き方の例（今は使わないのでコメントにしてある）
     // Assertions.assertEquals(expected, actual);
+    // （verify(偽物, times(回数)).メソッド()：「偽物のそのメソッドが、指定した回数だけ呼ばれたか」を確かめる書き方）
     // ①Repositoryへの「受講生を全件ください」が、ちょうど1回呼ばれたこと（times(1)＝1回）
     verify(repository, times(1)).search();
     // ②Repositoryへの「コースを全件ください」が、ちょうど1回呼ばれたこと
@@ -91,8 +129,12 @@ class StudentServiceTest {
     // 【後処理】本物のDBは使っていないので、あと片付け（元に戻す作業）は必要ない
   }
 
-  // 受講生1人分の検索（searchStudent）が、Repositoryを正しく呼び出し、
-  // 受け取った結果をStudentDetailにまとめて返すことを確認するテスト
+  /**
+   * 【正常系】受講生を1人だけ調べる機能（searchStudent）のテストです。
+   * 番号（ID）を伝えると、作業役（Service）が倉庫係（Repository）に
+   * 「この番号の受講生」と「その人のコース」を探してもらい、
+   * 2つを1セット（StudentDetail）にして返せているか、を確かめます。
+   */
   @Test
   void 受講生詳細の検索_リポジトリの処理が適切に呼び出せていること() {
     // 【事前準備】テスト用のID（999番）と、その番号の受講生を用意する
@@ -122,8 +164,14 @@ class StudentServiceTest {
     assertEquals(studentCourseList, actual.getStudentCourseList());
   }
 
-  // 受講生の新規登録（registerStudent）が、受講生とコースをRepositoryに登録し、
-  // 削除フラグを未削除（false）にすることを確認するテスト
+  /**
+   * 【正常系】新しい受講生を登録する機能（registerStudent）のテストです。
+   * 次の4つができているかを確かめます。
+   * ①受講生とコースを、倉庫係（Repository）に1回ずつしまってもらった
+   * ②「削除済み」の印が、「削除されていない」に自動で直った
+   * ③コースに、受講生の番号が自動で書きこまれた
+   * ④コースの開始日は「今」、終了日は「ちょうど1年後」に自動で決まった
+   */
   @Test
   void 受講生詳細の登録_受講生とコースが登録され_コースに受講生IDと開始日時と終了日時が設定されること() {
     // 【事前準備】
@@ -146,6 +194,7 @@ class StudentServiceTest {
     verify(repository, times(1)).registerStudent(student);
     verify(repository, times(1)).registerStudentCourse(studentCourse);
     // ②削除フラグが false（未削除）に書きかわっていること
+    // （assertFalse：「中身が false なら合格」／ assertTrue：「中身が true なら合格」）
     assertFalse(student.getIsDeleted());
     // ③コースに、受講生の番号（999）がセットされていること
     assertEquals(999, studentCourse.getStudentId());
@@ -157,7 +206,11 @@ class StudentServiceTest {
     assertEquals(startAt.plusYears(1), studentCourse.getCourseEndAt());
   }
 
-  // 受講生情報の更新（updateStudent）が、受講生とコースの更新をRepositoryに依頼することを確認するテスト
+  /**
+   * 【正常系】受講生の情報を書きかえる機能（updateStudent）のテストです。
+   * 作業役（Service）が、倉庫係（Repository）に
+   * 「受講生の情報を書きかえてね」「コースの情報も書きかえてね」と、1回ずつ頼めているかを確かめます。
+   */
   @Test
   void 受講生詳細の更新_リポジトリの処理が適切に呼び出せていること() {
     // 【事前準備】受講生1人とコース1件を持つ受講生詳細を作る
@@ -179,10 +232,15 @@ class StudentServiceTest {
     verify(repository, times(1)).updateStudentCourse(studentCourse);
   }
 
-  // 【異常系＝うまくいかない場合のテスト】
-  // 一覧検索（searchStudentList）の途中でDBのエラー（例外）が起きたとき、
-  // エラーがそのまま呼び出し元へ伝わり、そのあとの作業（コース取得・変換）に進まないことを確認するテスト
-  // （例外＝「問題が起きたよ！」という知らせ。出ると、その場で処理が止まる）
+  // ==================== 【異常系】うまくいかない場合のテスト ====================
+
+  /**
+   * 【異常系】受講生の一覧を調べている途中で、倉庫（DB）に問題が起きた場合のテストです。
+   * 最初の「受講生の名簿をください」の時点で失敗したら、
+   * ①「問題が起きたよ！」という知らせ（例外）が、そのまま外へ伝わる
+   * ②そのあとの作業（コースの名簿をもらう・整理する）には進まない
+   * の2つを確かめます。（失敗したのに作業を続けてしまうと困るからです）
+   */
   @Test
   void 受講生詳細の一覧検索_受講生の全件取得で例外が発生した場合_例外が投げられ後続の処理は呼ばれないこと() {
     // 【事前準備】受講生の全件取得で、DBエラーが起きたことにする
@@ -190,7 +248,8 @@ class StudentServiceTest {
     when(repository.search()).thenThrow(new RuntimeException("DBエラー"));
 
     // 【実行・検証】①エラーがそのまま呼び出し元に投げられること
-    // （assertThrows：→の右側（ラムダ式）を実行して、指定した種類のエラーが出れば合格）
+    // （assertThrows：→の右側（ラムダ式＝「この処理をやってね」という短い書き方）を実行して、
+    //  指定した種類のエラーが出れば合格）
     assertThrows(RuntimeException.class, () -> sut.searchStudentList());
     // ②途中で止まるため、コース取得とConverterは呼ばれていないこと
     // （never()：1回も呼ばれていない。any()：どんな引数でもOK、という意味）
@@ -198,10 +257,14 @@ class StudentServiceTest {
     verify(converter, never()).convertStudentDetails(any(), any());
   }
 
-  // 【異常系】存在しない番号（ID）で検索（searchStudent）すると、
-  // 今のプログラムでは NullPointerException（ヌルポ）というエラーになることを確認するテスト
-  // （null＝「何も入っていない」状態。見つからなかった受講生がnullのまま student.getId() を使うため、エラーになる。
-  //  将来「見つかりません」という専用のエラー処理を入れたら、このテストも書きかえる）
+  /**
+   * 【異常系】いない人の番号（ID）で調べた場合のテストです。
+   * 見つからないと、倉庫係（Repository）は「何も入っていない」（null）を返します。
+   * 今のプログラムは、その「空っぽ」の人の番号を使おうとして、
+   * NullPointerException（ヌルポ＝空っぽのものを使おうとしたエラー）になります。
+   * このエラーが起きること、そしてコースを探す作業には進まないことを確かめます。
+   * （将来「見つかりません」という専用のエラーを作ったら、このテストも書きかえます）
+   */
   @Test
   void 受講生詳細の検索_存在しないIDの場合_NullPointerExceptionが発生しコース検索は呼ばれないこと() {
     // 【事前準備】存在しない番号なので、偽物のRepositoryが null（見つからなかった）を返すことにする
@@ -215,9 +278,15 @@ class StudentServiceTest {
     verify(repository, never()).searchStudentCourseList(any());
   }
 
-  // 【異常系】新規登録（registerStudent）で受講生の登録に失敗したとき、
-  // エラーが呼び出し元へ伝わり、コースの登録には進まないことを確認するテスト
-  // （※@Transactionalによる「登録の取り消し」はSpringの機能なので、この偽物を使ったテストでは確認できない）
+  /**
+   * 【異常系】新しい受講生を登録しようとして、受講生のしまいこみに失敗した場合のテストです。
+   * 失敗したら、
+   * ①「問題が起きたよ！」という知らせ（例外）が、そのまま外へ伝わる
+   * ②コースをしまう作業には進まない
+   * の2つを確かめます。
+   * （※「途中で失敗したら、全部なかったことにする」という仕組み（@Transactional）は、
+   * Springという別の道具の働きなので、この偽物を使ったテストでは確かめられません）
+   */
   @Test
   void 受講生詳細の登録_受講生の登録で例外が発生した場合_例外が呼び出し元へ投げられコースは登録されないこと() {
     // 【事前準備】登録する受講生とコース（1件）を1セットにして用意する
@@ -234,8 +303,13 @@ class StudentServiceTest {
     verify(repository, never()).registerStudentCourse(any());
   }
 
-  // 【異常系】更新（updateStudent）で受講生の更新に失敗したとき、
-  // エラーが呼び出し元へ伝わり、コースの更新には進まないことを確認するテスト
+  /**
+   * 【異常系】受講生の情報を書きかえようとして、受講生の書きかえに失敗した場合のテストです。
+   * 失敗したら、
+   * ①「問題が起きたよ！」という知らせ（例外）が、そのまま外へ伝わる
+   * ②コースを書きかえる作業には進まない
+   * の2つを確かめます。
+   */
   @Test
   void 受講生詳細の更新_受講生の更新で例外が発生した場合_例外が呼び出し元へ投げられコースは更新されないこと() {
     // 【事前準備】更新する受講生とコース（1件）を1セットにして用意する

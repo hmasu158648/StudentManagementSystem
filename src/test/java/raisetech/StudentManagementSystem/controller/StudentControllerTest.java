@@ -22,70 +22,95 @@ import raisetech.StudentManagementSystem.service.StudentService;
  * StudentController（リクエストの受付窓口）のテストクラスです。
  * 本物のサーバーやDBは起動せず、擬似的にHTTPリクエストを送って、
  * 「URLに対して正しいステータスが返るか」「Serviceを正しく呼び出しているか」を確認します。
+ * あわせて、受講生（Student）の入力チェック（ルールを守っているか）も確認します。
+ *
+ * 【たとえ話】Controllerはお店の「受付係」、Serviceは「作業をする人」、DBは「倉庫」です。
+ * このテストでは、受付係の仕事だけを調べたいので、作業をする人と倉庫は「ものまね役（偽物）」にしています。
  */
-// @WebMvcTest：Controller（Web層）だけを起動してテストする目印。
+// @WebMvcTest：「受付係（Controller）だけを動かしてテストするよ」という目印。
 // 引数のStudentControllerだけを対象にするので、Service・Repository・DBは読み込まれない
 @WebMvcTest(StudentController.class)
 class StudentControllerTest {
 
-  // MockMvc：サーバーを立てずに、擬似的にHTTPリクエストを送れる道具（Springが用意して注入する）
+  // MockMvc（モックエムブイシー）：本物のサーバーを動かさなくても、
+  // 「このURLにアクセスしたよ」というふりができる道具。Springが自動で用意してくれる
   @Autowired
   private MockMvc mockMvc;
 
-  // @MockitoBean：ControllerがServiceを使うため、本物ではなく偽物（モック）のServiceをSpringに登録する。
-  // 偽物なので、DBには接続せず、呼び出しの記録だけが残る
+  // @MockitoBean：本物のServiceの代わりに、ものまね役（偽物）のServiceを使う、という目印。
+  // 偽物なので、DB（倉庫）には接続しない。「何回呼ばれたか」という記録だけが残るので、あとで確認できる
   @MockitoBean
   private StudentService service;
 
+  // Validator（バリデーター）は「入力チェックの先生」のようなもの。
+  // たとえば「名前は空っぽはダメ」「IDは1以上」といったルールを、データクラスに書いてある。
+  // その先生に「このデータ、ルールを守れているか見て」とお願いすると、
+  // ルールを破っているところを、一覧にして教えてくれる。
+  // 右側の Validation.buildDefaultValidatorFactory().getValidator() は、
+  // その先生を呼んでくる、おなじみの決まり文句（そのまま覚えて使えばOK）。
+  // ※ サーバーにリクエストを送らなくても、データだけでチェックできるのが便利なところ
   private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  // 一覧検索（GET /studentList）が正常（200）で終わり、
-  // Serviceの一覧検索を1回呼び出すことを確認するテスト
+  // 受講生の一覧を見るためのURL（/studentList）にアクセスしたとき、
+  // 「成功（200）」が返ることと、受付係がServiceに「一覧をお願い」と1回頼んだことを確認するテスト
+  // （throws Exception：アクセスのふりをする処理は、失敗するかもしれないので付けている）
   @Test
   void 受講生詳細の一覧検索が実行できて_サービスの一覧検索が1回呼ばれること() throws Exception {
-    // 【実行】GET /studentList にリクエストを送り、結果を検証する
-    // （偽物のServiceには戻り値の約束をしていないので、Mockitoの標準動作で空のリストが返り、レスポンスも[]になる）
+    // 【実行】ブラウザで /studentList を開いたときと同じように、GETでアクセスしたふりをする
+    // （偽物のServiceは何も約束していないので、空っぽのリストを返す。今回は中身は調べない）
     mockMvc.perform(get("/studentList"))
-        // 【検証】①ステータスコードが200（OK）であること
+        // 【検証】①結果の番号（ステータスコード）が200（＝成功）であること
         .andExpect(status().isOk());
 
-    // ②Controllerが、Serviceの一覧検索（searchStudentList）をちょうど1回呼び出したこと
+    // ②受付係（Controller）が、Serviceの一覧検索（searchStudentList）を、ちょうど1回呼んだこと
     verify(service, times(1)).searchStudentList();
   }
 
   /**
-   * 入力チェックに合格する（ルール違反のない）受講生を作ります。
-   * 各テストではこの受講生の1項目だけを変えることで、確かめたいルールだけを検証できるようにしています。
+   * 入力チェックに合格する（ルールを守っている）受講生を作ります。
+   * 各テストでは、この受講生の1か所だけを変えます。
+   * そうすると、「変えたところが原因でルール違反になった」とはっきり分かります（比べるときと同じ考え方です）。
    */
   private Student createValidStudent() {
+    // ①空の受講生を作る
     Student student = new Student();
+    // ②名前・ふりがな（全角カタカナ）・メールアドレスを、ルールを守った正しい形で入れる
     student.setName("山田太郎");
     student.setKanaName("ヤマダタロウ");
     student.setEmail("taro@example.com");
+    // ③できあがった受講生を、テストで使えるように返す
     return student;
   }
 
-  // 正しい値を入れた受講生は、入力チェックで違反が出ないことを確認するテスト
+  // 全部ルールどおりの受講生なら、入力チェックで「違反なし」になることを確認するテスト
   @Test
   void 受講生詳細の受講生で適切な値を入力した時に入力チェックに異常が発生しないこと() {
+    // 【事前準備】ルールを守っている受講生を用意する
     Student student = createValidStudent();
 
+    // 【実行】入力チェックの先生（validator）に、受講生を見てもらう。
+    // 結果は「ルール違反の一覧」で返ってくる（違反がなければ空っぽ）
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
 
+    // 【検証】違反の数が0件であること（assertEquals(期待する値, 実際の値)：同じなら合格）
     Assertions.assertEquals(0, violations.size());
   }
 
-  // ふりがなに全角カタカナ以外（ひらがな）を入れると、入力チェックに掛かることを確認するテスト
+  // ふりがなに、全角カタカナではなくひらがなを入れると、入力チェックでルール違反になることを確認するテスト
   @Test
   void 受講生詳細の受講生でふりがなにカタカナ以外を用いた時に入力チェックに掛かること() {
+    // 【事前準備】ルールを守っている受講生を用意し、ふりがなだけをひらがなに変える（わざとルール違反にする）
     Student student = createValidStudent();
     student.setKanaName("やまだたろう");
 
+    // 【実行】入力チェックの先生に、受講生を見てもらう
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
 
-    // ①違反は1件だけであること
+    // 【検証】
+    // ①違反は1件だけであること（変えたのはふりがなだけなので、1件のはず）
     Assertions.assertEquals(1, violations.size());
-    // ②違反した項目が kanaName であること
+    // ②違反した項目の名前が kanaName（ふりがな）であること
+    // （violations.iterator().next()：違反の一覧から1件目を取り出す。getPropertyPath()：どの項目が違反か）
     Assertions.assertEquals("kanaName", violations.iterator().next().getPropertyPath().toString());
   }
 }

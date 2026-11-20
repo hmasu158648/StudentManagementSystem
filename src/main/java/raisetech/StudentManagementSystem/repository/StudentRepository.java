@@ -10,6 +10,11 @@ import raisetech.StudentManagementSystem.data.StudentCourse;
  * MyBatisのマッパーとして、studentsテーブルとstudents_coursesテーブルへのSQLを実行します。
  * SQLはXMLファイル(resources/mapper/studentRepository.xml)に書かれており、
  * XMLの各SQLのid・#{...}の名前は、このインターフェースのメソッド名・引数（のフィールド）名と一致させる必要があります。
+ *
+ * <p>【たとえ話】Repositoryは、お店の「倉庫係」です。
+ * このインターフェースは「倉庫係にお願いできること一覧（メニュー表）」で、
+ * 実際に倉庫（データベース）から出し入れする作業のやり方（SQL）は、XMLファイルに書いてあります。
+ * （SQL＝データベースに「これを探して」「これを追加して」とお願いするための専用の言葉）
  */
 // @Mapper：MyBatisがこのインターフェースの実装クラスを自動で作ってくれる目印（自分で実装は書かない）
 // このインターフェースにはメソッドの宣言だけがあり、SQLはすべてXMLファイル(mapper/studentRepository.xml)に書かれている

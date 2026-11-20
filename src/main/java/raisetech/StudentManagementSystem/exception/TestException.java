@@ -2,7 +2,9 @@ package raisetech.StudentManagementSystem.exception;
 
 /**
  * 例外の動作確認用に作った、独自の例外クラスです。
- * Exceptionを継承した「チェック例外」なので、投げるメソッドには throws の宣言が必要です。
+ * 例外（＝プログラムの途中で起きたエラーを知らせるしくみ）の一種です。
+ * Exceptionを継承した「チェック例外」なので、投げるメソッドには「この例外が出るかもしれません」と
+ * 前もって知らせる throws の宣言が必要です。
  * 発生すると、共通の例外処理クラス（GlobalExceptionHandler）が受け取り、ステータス400でメッセージを返します。
  */
 public class TestException extends Exception {

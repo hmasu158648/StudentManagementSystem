@@ -6,6 +6,8 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 /**
  * WARファイルとして外部のTomcatなどにデプロイするときの、アプリケーション起動の入り口となるクラスです。
  * 普段のmainメソッド(Application)での起動ではなく、外部のサーバーがアプリを起動するときに使われます。
+ * （WARファイル＝アプリを1つにまとめたファイル、Tomcat＝アプリを動かすためのWebサーバー、と考えるとわかりやすいです。
+ * 自分のパソコンで ./gradlew bootRun を使って動かすときは、このクラスは使われません）
  */
 // SpringBootServletInitializerを継承：外部のサーバー(Tomcatなど)からSpring Bootアプリを起動できるようにする
 public class ServletInitializer extends SpringBootServletInitializer {
